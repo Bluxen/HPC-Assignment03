@@ -1,0 +1,152 @@
+\documentclass[unicode,11pt,a4paper,oneside,numbers=endperiod,openany]{scrartcl}
+\usepackage{graphicx}
+\usepackage{subfig}
+\usepackage{float}
+
+\input{assignment.sty}
+\begin{document}
+
+
+\setassignment
+\setduedate{09.11.2022, 23:59}
+
+\serieheader{High-Performance Computing}{2022}{Student: SIMONE TARENZI}{Discussed with: LUCA PERNIGO}{Solution for Project 3}{}
+\newline
+
+\section{Task: Implementing the linear algebra functions and the stencil operators [35 Points]}
+
+Nothing really interesting to be said about implementing the hpc functions and stencil operators.
+\newline
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{terminal128.png}
+\caption{the output of the terminal for the 128x128 grid}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{output128.png}
+\caption{the output.png file of the 128x128 grid created by plotting.py}
+\end{figure}
+
+I've also tried doing a test with a 500x500 grid size.
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{terminal500.png}
+\caption{the output of the terminal for the 500x500 grid}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.7\linewidth]{output500.png}
+\caption{the output.png file of the 500x500 grid created by plotting.py}
+\end{figure}
+
+
+\section{Task:  Adding OpenMP to the nonlinear PDE mini-app [50 Points]}
+
+First of all I've added the int numThreads in the data header that can be set directly by calling the main from the terminal. This makes it way easier to run and plot the result of the program using a varying number of OpenMP threads.
+\newline
+After that, implementing the parallel versions of the hpc\_xxxx() functions was very straightforward. 
+\newline
+\newline
+Using 4 threads showed great results for both the 128 and 256 grids, but the 512 had its best ones while using 16 threads.
+\newline
+\begin{figure}[H]
+\centering
+  \subfloat[Using 1 thread on a 128x128 grid]{\includegraphics[width=0.49\textwidth]{terminal1x128.png}\label{fig:f1}}
+  \hfill
+  \subfloat[Using 4 threads on a 128x128 grid]{\includegraphics[width=0.49\textwidth]{terminal4x128.png}\label{fig:f2}}
+  \caption{comparison between two runs of the program on a 128x128 grid with 1 and 4 threads}
+\end{figure}
+\begin{figure}[H]
+\centering
+  \subfloat[Using 1 thread on a 256x256 grid]{\includegraphics[width=0.49\textwidth]{terminal1x256.png}\label{fig:f1}}
+  \hfill
+  \subfloat[Using 4 threads on a 256x256 grid]{\includegraphics[width=0.49\textwidth]{terminal4x256.png}\label{fig:f2}}
+  \caption{comparison between two runs of the program on a 256x256 grid with 1 and 4 threads}
+\end{figure}
+\begin{figure}[H]
+\centering
+  \subfloat[Using 4 threads on a 512x512 grid]{\includegraphics[width=0.49\textwidth]{terminal4x512.png}\label{fig:f1}}
+  \hfill
+  \subfloat[Using 16 threads on a 512x512 grid]{\includegraphics[width=0.49\textwidth]{terminal16x512.png}\label{fig:f2}}
+  \caption{comparison between two runs of the program on a 512x512 grid with 4 and 16 threads}
+\end{figure}
+Next, the exercise asked to implement the parallelization for the stencil operators of the grid and plot the performance of various grid sizes while using a number of threads going from 1 to 24.
+\newline
+First I implemented parallelization for the interior grid points and the inner east, west, north and south boundaries.
+\newline
+Then I created a manual\_plot.py file that shows the performance for the various thread numbers.
+\newline
+I also modified the main class so that it writes to a txt file the time taken for the program to run.
+\newline
+Being the first time I used Python, I simply copy-pasted the results in the manual\_plot.py file.
+\newline
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{64manualplot.png}
+\caption{performance of the parallel version of the program for a 64x64 grid}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{128manualplot.png}
+\caption{performance of the parallel version of the program for a 128x128 grid}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{256manualplot.png}
+\caption{performance of the parallel version of the program for a 256x256 grid}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{512manualplot.png}
+\caption{performance of the parallel version of the program for a 512x512 grid}
+\end{figure}
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{1024manualplot.png}
+\caption{performance of the parallel version of the program for a 1024x1024 grid}
+\end{figure}
+
+The 64x64 grid (Fig.8) clearly shows the better results when using a small number of threads: 
+\newline
+in particular, using 4 threads consistently demonstrates the best performance, while getting progressively worse with each added thread, with a pretty odd dip when going from 13 to 14 threads.
+\newline
+\newline
+The 128x128 grid (Fig.9) presented a similar performance graph to the 64x64 one, but with a more prominent increase in performance when going from a single thread to multiple ones.
+\newline
+\newline
+The same can be said for the 256x256 grid (Fig.10), which shows an even bigger relative difference in performance between 1 and multiple threads.
+\newline
+\newline
+The 64 and 128 grid tests in particular exhibited worse performance when using an higher number of threads than their sequential implementation, and this is because the cost of creating those threads exceeded the actual cost of the operations.
+\newline
+\newline
+Both the 512x512 (Fig.11) and 1024x1024 grid (Fig.12) instead, no matter the number of threads used in the test, always show better performance than their sequential version. The cost of the operations in this case is bigger than the cost of thread creation. 
+\newline
+However, after the 20 threads mark, I noticed that all tests show a dip in performance: this is probably because the cluster node doesn't support more than 20 threads, and so adding them is not only useless, since they are not used, but it also worsen performance because creating a thread is never a free operation.
+\newline
+\newline
+Next, the exercise asked to show a weak scaling plot of the program.
+\newline
+I wanted to work with a 32x32 grid size for each thread, since the 64x64 grid showed the best performance when using 4 threads, but that would mean that the 256x256 grid would already use 64 threads, and we already know that the limit is 20.
+\newline
+We can at least work with 1 thread for each 64x64 grid, so that would mean 4 threads for the 128x128 grid and 16 threads for the 256x256 one.
+\newline
+\newline
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.8\linewidth]{weakScalingPlot.png}
+\caption{performance of the 64x64 grid with 1 thread, the 128x128 grid with 4 threads and 256x256 grid with 16 threads}
+\end{figure}
+We can see however that the performance worsens. While each thread is working on the same 64x64 grid, my guess is that the number of operations still increases exponentially, hence the exponential growth in time needed to run the program.
+
+\section{Bonus Question  [5-10 Points]}
+
+Theoretically yes: SIMD works by performing the same operation simultaneously on multiple data points, like vectors. It could be implemented for both the linear algebra functions, which work on vectors, and even on the stencil operators. The real question is if it can work faster than the parallel version, but it probably does.
+
+\section{Task:  Quality of the Report  [15 Points]}
+
+
+
+\end{document}
